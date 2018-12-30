@@ -1,0 +1,21 @@
+{
+  "name": "great-peach",
+  "version": "0.0.0",
+  "description": "No description",
+  "author": null,
+  "private": true,
+  "main": "node_modules/expo/AppEntry.js",
+  "dependencies": {
+    "expo": "^31.0.0",
+    "react": "16.5.0",
+    "react-native": "https://github.com/expo/react-native/archive/sdk-31.0.0.tar.gz",
+    "buffer": "5.2.0",
+    "events": "3.0.0",
+    "pouchdb-adapter-http": "7.0.0",
+    "pouchdb-adapter-websql-core": "^7.0.0",
+    "pouchdb-core": "7.0.0",
+    "pouchdb-find": "7.0.0",
+    "pouchdb-replication": "7.0.0",
+    "react-native-paper": "2.1.3"
+  }
+}
