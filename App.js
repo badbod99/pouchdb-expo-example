@@ -6,31 +6,31 @@ import AssetExample from './components/AssetExample';
 // or any pure javascript modules available in npm
 import { Card } from 'react-native-paper';
 
-import * as ReplicateLocal from './pouchdb/replicateLocal';
+import * as Kittens from './services/kittens';
+import presetKittens from './presetKittens';
 
 export default class App extends React.Component {
   state = {
     localDocs: []
   }
 
-  renderLocalDocs() {
-    return this.state.localDocs.map(doc => {
+  renderKittens() {
+    return this.state.localDocs.map(item => {
       return (
-        <Text key={doc.key} style={styles.developmentModeText}>
-          {doc.doc.name}
+        <Text key={item.key} style={styles.developmentModeText}>
+          {item.kitten.name}
         </Text>
       );
     });
   }
-
-  async loadDocs() {
-    let exists = await ReplicateLocal.docExists();
-    if (!exists) {
-      await ReplicateLocal.addDoc();
-    }
-    await ReplicateLocal.doReplication();
-    let docs = await ReplicateLocal.getDocs();
-    await this.promisedSetState({localDocs: docs});
+  
+  async loadKittens() {
+    await Promise.all(presetKittens.map(function (kit) {
+      return Kittens.addIfNew(kit);
+    })); 
+    await Kittens.duplicate();
+    let allKittens = await Kittens.getAll();
+    await this.promisedSetState({localDocs: allKittens});
   }
 
   promisedSetState = (newState) => {
@@ -42,7 +42,7 @@ export default class App extends React.Component {
   }
 
   async componentDidMount() {
-    await this.loadDocs();
+    await this.loadKittens();
   }
 
   render() {
@@ -51,7 +51,7 @@ export default class App extends React.Component {
         <Text style={styles.paragraph}>
           This is a demo of working with PouchDB within Expo on React Native.
         </Text>
-        {this.renderLocalDocs()}
+        {this.renderKittens()}
         <Card>
           <AssetExample />
         </Card>
