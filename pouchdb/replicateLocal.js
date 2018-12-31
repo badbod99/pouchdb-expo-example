@@ -36,16 +36,37 @@ export const getDocs = async () => {
   try {
     const result = await this.localDB2.allDocs({ include_docs: true });
     return result.rows
-      .map(row => row.doc)
-      .map(doc => {
-        return { key: doc.key, data: doc };
+      .map(row => {
+        return { key: row.key, doc: row.doc };
       });
   } catch (err) {
     console.log(err);
   }
 }
 
+
+// Raised during ongoing sync from CouchDB, not from changes
+function onSyncChange(info) {
+  console.log(info);
+}
+
+// Raised when no new changes are present
+function onSyncActive(err) {
+  console.log(err);
+}
+
+// Raised when no new changes are present
+function onSyncPaused(err) {
+  console.log('PAUSED');
+}
+
+// Raised when an error occurs with sync
+function onSyncError(err) {
+  console.log(JSON.stringify(err));
+}
+
 export const doReplication = async () => {
+  
   try {
     // This throws and error
     let ret = await this.localDB2.replicate.from(this.localDB1);

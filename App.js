@@ -7,89 +7,51 @@ import AssetExample from './components/AssetExample';
 import { Card } from 'react-native-paper';
 
 import * as ReplicateLocal from './pouchdb/replicateLocal';
-import * as ReplicateRemote from './pouchdb/replicateRemote';
 
 export default class App extends React.Component {
+  state = {
+    localDocs: []
+  }
+
   renderLocalDocs() {
-    if (this.state == null) {
-      return;
-    }
-    
     return this.state.localDocs.map(doc => {
       return (
         <Text key={doc.key} style={styles.developmentModeText}>
-          {doc.data._id}
+          {doc.doc.name}
         </Text>
       );
     });
   }
 
-  renderRemoteDocs() {
-    if (this.state == null) {
-      return;
+  async loadDocs() {
+    let exists = await ReplicateLocal.docExists();
+    if (!exists) {
+      await ReplicateLocal.addDoc();
     }
-    
-    return this.state.remoteDocs.map(doc => {
-      return (
-        <Text key={doc.key} style={styles.developmentModeText}>
-          {doc.data._id}
-        </Text>
-      );
-    });
+    await ReplicateLocal.doReplication();
+    let docs = await ReplicateLocal.getDocs();
+    await this.promisedSetState({localDocs: docs});
   }
 
-  doLocalRep() {
-    ReplicateLocal.docExists().then(
-    function (exists) {
-      if (exists) {
-        return ReplicateLocal.addDoc();
-      } else {
-        return Promise.resolve();
-      }
-    }).then(function () {
-      return ReplicateLocal.doReplication();
-    }).then(function () {
-      return ReplicateLocal.getDocs();
-    }).then(function (result) {
-      () => this.setState({localDocs: result});
-    }).catch(function (err) {
-      console.log(err);
-    });
+  promisedSetState = (newState) => {
+      return new Promise((resolve) => {
+          this.setState(newState, () => {
+              resolve()
+          });
+      });
   }
 
-  doRemoteRep() {
-    ReplicateRemote.docExists().then(
-    function (exists) {
-      if (exists) {
-        return ReplicateRemote.addDoc();
-      } else {
-        return Promise.resolve();
-      }
-    }).then(function () {
-      return ReplicateRemote.doReplication();
-    }).then(function () {
-      return ReplicateRemote.getDocs();
-    }).then(function (result) {
-      () => this.setState({remoteDocs: result});
-    }).catch(function (err) {
-      console.log(err);
-    });
-  }
-
-  componentDidMount() {
-    this.doRemoteRep();
-    this.doLocalRep();
+  async componentDidMount() {
+    await this.loadDocs();
   }
 
   render() {
     return (
       <View style={styles.container}>
         <Text style={styles.paragraph}>
-          This is a demo showing replication failing with React Native regardless
-          of underlying storage.
+          This is a demo of working with PouchDB within Expo on React Native.
         </Text>
         {this.renderLocalDocs()}
-        {this.renderRemoteDocs()}
         <Card>
           <AssetExample />
         </Card>
